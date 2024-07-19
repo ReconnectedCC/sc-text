@@ -25,6 +25,7 @@ object FontCalculator {
 
   fun width(code: Int, bold: Boolean = false): Int {
     if (code == ' '.code) return 4
+    if (code > 65535) return 8
     return (if (bold) boldGlyphSizes[code] else glyphSizes[code]).toInt()
   }
 
