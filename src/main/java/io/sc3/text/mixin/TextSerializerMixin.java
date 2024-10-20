@@ -1,14 +1,14 @@
 package io.sc3.text.mixin;
 
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
+import com.google.gson.*;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.JsonOps;
 import io.sc3.text.TokenTextContent;
-import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.text.TextCodecs;
 import net.minecraft.util.JsonHelper;
+import net.minecraft.util.Util;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -17,13 +17,63 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-import java.lang.reflect.Type;
-
-@Mixin(Text.Serializer.class)
+@Mixin(Text.Serialization.class)
 public class TextSerializerMixin {
   @Unique
-  private final ThreadLocal<String> token = ThreadLocal.withInitial(() -> null);
+  private static final ThreadLocal<String> token = ThreadLocal.withInitial(() -> null);
 
+  @Inject(
+    method = "toJson",
+    at = @At(
+      value = "HEAD"
+    ),
+    cancellable = true,
+    locals = LocalCapture.CAPTURE_FAILHARD
+  )
+  private static void serialize(
+    Text text,
+    CallbackInfoReturnable<JsonElement> cir
+  ) {
+    if (text.getContent() instanceof TokenTextContent tokenTextContent) {
+      JsonObject elem = Util.getResult(TextCodecs.CODEC.encodeStart(JsonOps.INSTANCE, text), JsonParseException::new).getAsJsonObject();
+      elem.addProperty("text", "<token>");
+      elem.addProperty("token", tokenTextContent.getToken());
+      cir.setReturnValue(elem);
+    }
+  }
+  @Inject(
+    method = "fromJson(Lcom/google/gson/JsonElement;)Lnet/minecraft/text/MutableText;",
+    at = @At(
+      value = "TAIL"
+    ),
+    locals = LocalCapture.CAPTURE_FAILHARD
+  )
+  private static void startDeserializingText(
+    JsonElement json, CallbackInfoReturnable<MutableText> cir
+  ) {
+    if (json.getAsJsonObject().has("token")) {
+      String tokenn = JsonHelper.getString(json.getAsJsonObject(), "token");
+      token.set(tokenn);
+    }
+  }
+  @Inject(
+    method = "fromJson(Lcom/google/gson/JsonElement;)Lnet/minecraft/text/MutableText;",
+    at = @At("HEAD")
+  )
+  private static void clearLocalToken(CallbackInfoReturnable<MutableText> cir) {
+    token.set(null);
+  }
+  @Inject(
+    method = "fromJson(Lcom/google/gson/JsonElement;)Lnet/minecraft/text/MutableText;",
+    at = @At("HEAD"),
+    cancellable = true
+  )
+  private static void something(CallbackInfoReturnable<MutableText> cir) {
+    if (token.get() != null) {
+      cir.setReturnValue(MutableText.of(new TokenTextContent(token.get())));
+    }
+  }
+  /*
   @Inject(
     method = "serialize(Lnet/minecraft/text/Text;Ljava/lang/reflect/Type;Lcom/google/gson/JsonSerializationContext;)Lcom/google/gson/JsonElement;",
     at = @At(
@@ -91,5 +141,5 @@ public class TextSerializerMixin {
   )
   private void clearLocalToken(CallbackInfoReturnable<MutableText> cir) {
     token.set(null);
-  }
+  }*/
 }

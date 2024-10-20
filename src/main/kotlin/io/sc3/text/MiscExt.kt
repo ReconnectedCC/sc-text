@@ -74,6 +74,5 @@ fun String?.orNull(): String? = if (this == null || this == "") null else this
 fun GsonBuilder.registerMinecraftTextAdapter(): GsonBuilder = apply {
   disableHtmlEscaping()
   registerTypeHierarchyAdapter(Text::class.java, Text.Serializer())
-  registerTypeHierarchyAdapter(Style::class.java, Style.Serializer())
   registerTypeAdapterFactory(LowercaseEnumTypeAdapterFactory())
 }

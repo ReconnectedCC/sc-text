@@ -26,7 +26,7 @@ group = mavenGroup
 
 tasks.withType<KotlinCompile>().configureEach {
   kotlinOptions {
-    jvmTarget = "17"
+    jvmTarget = "21"
     apiVersion = "1.9"
     languageVersion = "1.9"
   }
@@ -86,8 +86,8 @@ publishing {
 
   repositories {
     maven {
-      name = "lemmmyRepo"
-      url = uri("https://repo.lem.sh/releases")
+      name = "sadRepo"
+      url = uri("https://repo.sad.oivh/releases")
 
       if (!System.getenv("MAVEN_USERNAME").isNullOrEmpty()) {
         credentials {
