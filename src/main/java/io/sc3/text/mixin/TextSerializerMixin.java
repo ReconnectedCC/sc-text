@@ -4,6 +4,7 @@ import com.google.gson.*;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import io.sc3.text.TokenTextContent;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextCodecs;
@@ -31,25 +32,24 @@ public class TextSerializerMixin {
     locals = LocalCapture.CAPTURE_FAILHARD
   )
   private static void serialize(
-    Text text,
-    CallbackInfoReturnable<JsonElement> cir
+    Text text, RegistryWrapper.WrapperLookup registries, CallbackInfoReturnable<JsonElement> cir
   ) {
     if (text.getContent() instanceof TokenTextContent tokenTextContent) {
-      JsonObject elem = Util.getResult(TextCodecs.CODEC.encodeStart(JsonOps.INSTANCE, text), JsonParseException::new).getAsJsonObject();
+      JsonObject elem = TextCodecs.CODEC.encodeStart(JsonOps.INSTANCE, text).getOrThrow(JsonParseException::new).getAsJsonObject();
       elem.addProperty("text", "<token>");
       elem.addProperty("token", tokenTextContent.getToken());
       cir.setReturnValue(elem);
     }
   }
   @Inject(
-    method = "fromJson(Lcom/google/gson/JsonElement;)Lnet/minecraft/text/MutableText;",
+    method = "fromJson(Lcom/google/gson/JsonElement;Lnet/minecraft/registry/RegistryWrapper$WrapperLookup;)Lnet/minecraft/text/MutableText;",
     at = @At(
       value = "TAIL"
     ),
     locals = LocalCapture.CAPTURE_FAILHARD
   )
   private static void startDeserializingText(
-    JsonElement json, CallbackInfoReturnable<MutableText> cir
+    JsonElement json, RegistryWrapper.WrapperLookup registries, CallbackInfoReturnable<MutableText> cir
   ) {
     if (json.getAsJsonObject().has("token")) {
       String tokenn = JsonHelper.getString(json.getAsJsonObject(), "token");
@@ -57,14 +57,14 @@ public class TextSerializerMixin {
     }
   }
   @Inject(
-    method = "fromJson(Lcom/google/gson/JsonElement;)Lnet/minecraft/text/MutableText;",
+    method = "fromJson(Lcom/google/gson/JsonElement;Lnet/minecraft/registry/RegistryWrapper$WrapperLookup;)Lnet/minecraft/text/MutableText;",
     at = @At("HEAD")
   )
   private static void clearLocalToken(CallbackInfoReturnable<MutableText> cir) {
     token.set(null);
   }
   @Inject(
-    method = "fromJson(Lcom/google/gson/JsonElement;)Lnet/minecraft/text/MutableText;",
+    method = "fromJson(Lcom/google/gson/JsonElement;Lnet/minecraft/registry/RegistryWrapper$WrapperLookup;)Lnet/minecraft/text/MutableText;",
     at = @At("HEAD"),
     cancellable = true
   )

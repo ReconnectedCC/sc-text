@@ -69,10 +69,3 @@ fun String.boldCount(count: Int, plural: String = this + "s"): String = "**$coun
 fun String.urlEncode(): String = URLEncoder.encode(this, "UTF-8")
 
 fun String?.orNull(): String? = if (this == null || this == "") null else this
-
-// Based on the default Minecraft Text type adapter, Text.Serializer.GSON
-fun GsonBuilder.registerMinecraftTextAdapter(): GsonBuilder = apply {
-  disableHtmlEscaping()
-  registerTypeHierarchyAdapter(Text::class.java, Text.Serializer())
-  registerTypeAdapterFactory(LowercaseEnumTypeAdapterFactory())
-}

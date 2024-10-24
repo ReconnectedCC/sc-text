@@ -2,4 +2,4 @@ accessWidener v1 named
 
 accessible method net/minecraft/client/font/TextRenderer getFontStorage (Lnet/minecraft/util/Identifier;)Lnet/minecraft/client/font/FontStorage;
 accessible field net/minecraft/client/font/FontStorage glyphCache Lnet/minecraft/client/font/GlyphContainer;
-accessible field net/minecraft/client/font/FontStorage fonts Ljava/util/List;
+accessible field net/minecraft/client/font/FontStorage availableFonts Ljava/util/List;
