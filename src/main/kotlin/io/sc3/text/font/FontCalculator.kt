@@ -15,7 +15,7 @@ import io.sc3.text.of
 import kotlin.math.ceil
 import kotlin.math.floor
 
-val SIZES_ID = Identifier("sc-text", "sc_glyph_sizes.bin")
+val SIZES_ID = Identifier.of("sc-text", "sc_glyph_sizes.bin")
 const val LINE_WIDTH = 320
 const val DEFAULT_PADDING = "="
 

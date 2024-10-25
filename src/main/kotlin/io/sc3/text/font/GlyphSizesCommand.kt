@@ -22,7 +22,7 @@ object GlyphSizesCommand {
     val widths = ByteArray(65536)
     val boldWidths = ByteArray(65536)
 
-    val fontStorage = textRenderer.getFontStorage(Identifier("minecraft", "default"))
+    val fontStorage = textRenderer.getFontStorage(Identifier.of("minecraft", "default"))
     fontStorage.availableFonts.forEach { font ->
       font.providedGlyphs.forEach glyphs@ {
         if (it > 65535) return@glyphs

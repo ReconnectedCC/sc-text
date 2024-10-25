@@ -28,16 +28,16 @@ object GlyphSizesTest {
   private fun render(ctx: DrawContext) {
     val glyphWidths = cachedGlyphWidths ?: return
 
-    var x = 16.0
-    val y = 16.0
+    var x = 16.0f
+    val y = 16.0f
 
     val tessellator = Tessellator.getInstance()
-    val buffer = tessellator.buffer
+    val buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR)
 
     val matrix = ctx.matrices.peek().positionMatrix
     val textRenderer = MinecraftClient.getInstance().textRenderer
-    val immediate = VertexConsumerProvider.immediate(buffer)
-    textRenderer.draw(text, x.toFloat(), y.toFloat(), 0xFF0000, false, matrix, immediate, TextLayerType.NORMAL, 0,
+    val immediate = VertexConsumerProvider.immediate(tessellator.allocator)
+    textRenderer.draw(text, x, y, 0xFF0000, false, matrix, immediate, TextLayerType.NORMAL, 0,
       LightmapTextureManager.MAX_LIGHT_COORDINATE)
     immediate.draw()
 
@@ -45,25 +45,25 @@ object GlyphSizesTest {
     RenderSystem.defaultBlendFunc()
     RenderSystem.setShader(GameRenderer::getPositionColorProgram)
 
-    buffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR)
     text.forEachIndexed { i, char ->
       val advance = glyphWidths[char.code]
-      x = line(buffer, i, x, y + 8.0, advance.toDouble())
+      x = line(buffer, i, x, y + 8.0f, advance.toFloat())
     }
-    tessellator.draw()
+    BufferRenderer.drawWithGlobalProgram(buffer.end());
+
 
     RenderSystem.disableBlend()
   }
 
   @Environment(EnvType.CLIENT)
-  private fun line(buffer: BufferBuilder, i: Int, x: Double, y: Double, advance: Double): Double {
+  private fun line(buffer: BufferBuilder, i: Int, x: Float, y: Float, advance: Float): Float {
     val r = (i % 2) * 1.0f
     val g = ((i + 1) % 2) * 1.0f
     val b = 0.0f
-    buffer.vertex(x, y, 0.0).color(r, g, b, 1.0f).next()
-    buffer.vertex(x, y + 2, 0.0).color(r, g, b, 1.0f).next()
-    buffer.vertex(x + advance, y + 2, 0.0).color(r, g, b, 1.0f).next()
-    buffer.vertex(x + advance, y, 0.0).color(r, g, b, 1.0f).next()
+    buffer.vertex(x, y, 0.0f).color(r, g, b, 1.0f)
+    buffer.vertex(x, y + 2, 0.0f).color(r, g, b, 1.0f)
+    buffer.vertex(x + advance, y + 2, 0.0f).color(r, g, b, 1.0f)
+    buffer.vertex(x + advance, y, 0.0f).color(r, g, b, 1.0f)
     return x + advance
   }
 
