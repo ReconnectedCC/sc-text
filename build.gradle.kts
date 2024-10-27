@@ -86,8 +86,9 @@ publishing {
 
   repositories {
     maven {
-      name = "sadRepo"
-      url = uri("https://repo.sad.ovh/releases")
+      name = "reconnectedRepo"
+      url = uri("https://maven.reconnected.cc/releases")
+
 
       if (!System.getenv("MAVEN_USERNAME").isNullOrEmpty()) {
         credentials {
