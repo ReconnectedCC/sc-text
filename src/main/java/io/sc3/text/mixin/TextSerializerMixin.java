@@ -51,9 +51,12 @@ public class TextSerializerMixin {
   private static void startDeserializingText(
     JsonElement json, RegistryWrapper.WrapperLookup registries, CallbackInfoReturnable<MutableText> cir
   ) {
-    if (json.getAsJsonObject().has("token")) {
-      String tokenn = JsonHelper.getString(json.getAsJsonObject(), "token");
-      token.set(tokenn);
+    // Guard against non‑object JSON (e.g., plain strings) which would cause getAsJsonObject() to throw
+    if (json != null && json.isJsonObject()) {
+      if (json.getAsJsonObject().has("token")) {
+        String tokenn = JsonHelper.getString(json.getAsJsonObject(), "token");
+        token.set(tokenn);
+      }
     }
   }
   @Inject(
